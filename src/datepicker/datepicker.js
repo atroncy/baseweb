@@ -290,6 +290,11 @@ export default class Datepicker<T = Date> extends React.Component<DatepickerProp
     this.setState({ inputValue });
 
     const parseDateString = (dateString) => {
+      // Prevent early parsing of value.
+      // Eg 25.12.2 will be transformed to 25.12.0002 formatted from date to string
+      if (dateString.replace(/(\s)*/g, '').length < formatString.replace(/(\s)*/g, '').length) {
+        return null;
+      }
       if (formatString === DEFAULT_DATE_FORMAT) {
         return this.dateHelpers.parse(dateString, 'slashDate', this.props.locale);
       }
@@ -322,16 +327,7 @@ export default class Datepicker<T = Date> extends React.Component<DatepickerProp
       }
     } else {
       const dateString = this.normalizeDashes(inputValue);
-      let date = this.dateHelpers.date(dateString);
-      const formatString = this.props.formatString;
-
-      // Prevent early parsing of value.
-      // Eg 25.12.2 will be transformed to 25.12.0002 formatted from date to string
-      if (dateString.replace(/(\s)*/g, '').length < formatString.replace(/(\s)*/g, '').length) {
-        date = null;
-      } else {
-        date = parseDateString(dateString);
-      }
+      const date = parseDateString(this.dateHelpers.date(dateString));
 
       const { displayValueAtRangeIndex, onChange, range, value } = this.props;
       if (date && this.dateHelpers.isValid(date) && onChange) {
